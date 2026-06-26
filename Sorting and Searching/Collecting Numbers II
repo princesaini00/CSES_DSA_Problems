@@ -1,0 +1,192 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        int[] nums = new int[n+1];
+        int[] pos = new int[n+3];
+        pos[0] = 0; pos[n+1] = n+1;
+
+        for (int i = 1; i <= n; i++) {
+            nums[i] = fs.nextInt();
+            pos[nums[i]] = i;
+        }
+
+        int rounds = 1;
+        for (int j = 2; j <= n; j++) {
+            if (pos[j] < pos[j - 1]) {
+                rounds++;
+            }
+        }
+
+        for(int i = 1; i <= m; i++) {
+            int a = fs.nextInt();
+            int b = fs.nextInt();
+
+            if(a > b) {
+                int temp = a;
+                a = b;
+                b = temp;
+            }
+
+            int n1 = nums[a];
+            int n2 = nums[b];
+
+            if(pos[n1 + 1] > a && pos[n1 + 1] < b) rounds++;
+            if(pos[n1 - 1] > a && pos[n1 - 1] < b) rounds--;
+            if(pos[n2 + 1] > a && pos[n2 + 1] < b) rounds--;
+            if(pos[n2 - 1] > a && pos[n2 - 1] < b) rounds++;
+
+//            if consecutive elements
+            if(n1 == (n2 + 1)) rounds--;
+            if(n1 == (n2 - 1)) rounds++;
+
+            out.println(rounds);
+//            swap in nums and in pos
+            int temp = nums[a];
+            nums[a] = nums[b];
+            nums[b] = temp;
+
+            pos[n1] = b;
+            pos[n2] = a;
+        }
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
