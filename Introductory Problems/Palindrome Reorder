@@ -1,0 +1,89 @@
+import java.io.*;
+import java.util.*;
+ 
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        String s = fs.next();
+        int n = s.length();
+ 
+        int[] freq = new int[26];
+        for (char ch : s.toCharArray()) {
+            freq[ch - 'A']++;
+        }
+ 
+        int oddEntries = 0;
+        int oddIndex = -1;
+        for (int i = 0; i < 26; i++) {
+            if (freq[i] % 2 != 0) {
+                oddEntries++;
+                oddIndex = i;
+            }
+        }
+ 
+        if (oddEntries > 1) {
+            out.println("NO SOLUTION");
+            return;
+        }
+ 
+        StringBuilder left = new StringBuilder();
+        StringBuilder mid = new StringBuilder();
+ 
+        for (int i = 0; i < 26; i++) {
+            for (int j = 0; j < freq[i] / 2; j++) {
+                left.append((char)('A' + i));
+            }
+ 
+            if (freq[i] % 2 == 1) {
+                mid.append((char)('A' + i));
+            }
+        }
+ 
+        String ans = left.toString()
+                + mid.toString()
+                + left.reverse().toString();
+ 
+        out.println(ans);
+        return;
+    }
+ 
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+ 
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+ 
+        out.flush();
+        out.close();
+    }
+ 
+    static class FastScanner {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer("");
+ 
+        String next() {
+            while (!st.hasMoreTokens()) {
+                try {
+                    String line = br.readLine();
+                    if (line == null) return "";
+                    st = new StringTokenizer(line);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
+        }
+ 
+        int nextInt() { return Integer.parseInt(next()); }
+        long nextLong() { return Long.parseLong(next()); }
+        double nextDouble() { return Double.parseDouble(next()); }
+        String nextLine() {
+            String str = "";
+            try { str = br.readLine(); }
+            catch (IOException e) { e.printStackTrace(); }
+            return str;
+        }
+    }
+}
