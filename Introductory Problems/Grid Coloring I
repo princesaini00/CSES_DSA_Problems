@@ -1,0 +1,85 @@
+import java.io.*;
+import java.util.*;
+ 
+import static java.lang.System.out;
+ 
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int rows = fs.nextInt();
+        int cols = fs.nextInt();
+        char[][] matrix = new char[rows][cols];
+ 
+        for (int i = 0; i < rows; i++) {
+            String s =  fs.next();
+            for(int j = 0; j < cols; j++){
+                matrix[i][j] = s.charAt(j);
+            }
+        }
+ 
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                for(char ch = 'A'; ch <= 'D'; ch++) {
+                    if(matrix[i][j] == ch) {
+                        continue;
+                    } else if(i-1 >= 0 && matrix[i-1][j] == ch) {
+                        continue;
+                    } else if(j-1 >= 0 && matrix[i][j-1] == ch) {
+                        continue;
+                    } else {
+                        matrix[i][j] = ch;
+                        break;
+                    }
+                }
+            }
+        }
+ 
+        for(int i = 0; i < rows; i++) {
+            for(int j = 0; j < cols; j++) {
+                out.print(matrix[i][j]);
+            }
+            out.println();
+        }
+        return;
+    }
+ 
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+ 
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+ 
+        out.flush();
+        out.close();
+    }
+ 
+    static class FastScanner {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer("");
+ 
+        String next() {
+            while (!st.hasMoreTokens()) {
+                try {
+                    String line = br.readLine();
+                    if (line == null) return "";
+                    st = new StringTokenizer(line);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
+        }
+ 
+        int nextInt() { return Integer.parseInt(next()); }
+        long nextLong() { return Long.parseLong(next()); }
+        double nextDouble() { return Double.parseDouble(next()); }
+        String nextLine() {
+            String str = "";
+            try { str = br.readLine(); }
+            catch (IOException e) { e.printStackTrace(); }
+            return str;
+        }
+    }
+}
