@@ -1,0 +1,69 @@
+import java.io.*;
+import java.util.*;
+ 
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        if(n <= 3) {
+            if(n == 1) out.println(1);
+            else out.println("NO SOLUTION");
+            return;
+        }
+ 
+//        print even first
+        int even = 2;
+        while(even <= n) {
+            out.println(even);
+            even += 2;
+        }
+ 
+//        print odd
+        int odd = 1;
+        while(odd <= n) {
+            out.println(odd);
+            odd += 2;
+        }
+        return;
+    }
+ 
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+ 
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+ 
+        out.flush();
+        out.close();
+    }
+ 
+    static class FastScanner {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer("");
+ 
+        String next() {
+            while (!st.hasMoreTokens()) {
+                try {
+                    String line = br.readLine();
+                    if (line == null) return "";
+                    st = new StringTokenizer(line);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
+        }
+ 
+        int nextInt() { return Integer.parseInt(next()); }
+        long nextLong() { return Long.parseLong(next()); }
+        double nextDouble() { return Double.parseDouble(next()); }
+        String nextLine() {
+            String str = "";
+            try { str = br.readLine(); }
+            catch (IOException e) { e.printStackTrace(); }
+            return str;
+        }
+    }
+}
