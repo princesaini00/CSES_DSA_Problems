@@ -1,0 +1,88 @@
+import java.io.*;
+import java.util.*;
+ 
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+ 
+        TreeMap<Integer, Integer> map = new TreeMap<>();
+        for(int i = 0; i < n; i++){
+            int key =  fs.nextInt();
+            map.put(key, map.getOrDefault(key, 0) + 1);
+        }
+ 
+        StringBuilder output = new StringBuilder();
+        for(int i = 0; i < m; i++){
+            int maxCP = fs.nextInt();
+            Map.Entry<Integer, Integer> entry = map.floorEntry(maxCP);
+            if(entry == null) output.append("-1\n");
+            else {
+                int key = entry.getKey();
+                int value = entry.getValue();
+ 
+                output.append(key).append("\n");
+                if(value == 1) map.remove(key);
+                else  map.put(key, value - 1);
+            }
+        }
+ 
+        out.print(output);
+        return;
+    }
+ 
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+ 
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+ 
+        out.flush();
+        out.close();
+    }
+ 
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+ 
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+ 
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+ 
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+ 
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+ 
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+    }
+}
