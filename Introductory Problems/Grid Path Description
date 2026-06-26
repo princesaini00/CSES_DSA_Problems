@@ -1,0 +1,102 @@
+import java.io.*;
+import java.util.*;
+ 
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        String s =  fs.next();
+ 
+        boolean[][] visited = new boolean[9][9];
+ 
+        for (int i = 0; i < 9; i++) {
+            visited[0][i] = true;
+            visited[8][i] = true;
+            visited[i][0] = true;
+            visited[i][8] = true;
+        }
+ 
+        int ans = dfs(1, 1, 0, 0, s, visited);
+        out.println(ans);
+        return;
+    }
+ 
+    private static int dfs(int r, int c, int steps, int idx, String s, boolean[][] visited) {
+        if (r == 7 && c == 1)
+            return steps == 48 ? 1 : 0;
+        if (steps == 48)
+            return 0;
+ 
+//        pruning on box type lr possible, ud not
+        if(visited[r+1][c] && visited[r-1][c] && !visited[r][c-1] && !visited[r][c+1]) {
+            return 0;
+        }
+ 
+//        ud possible, but lr not
+        if((visited[r][c-1] && visited[r][c+1] && !visited[r+1][c] && !visited[r-1][c])) {
+            return 0;
+        }
+ 
+        char ch = s.charAt(idx);
+        visited[r][c] = true;
+        int count = 0;
+ 
+        if((ch == '?' || ch == 'R') && !visited[r][c+1]) {
+            count += dfs(r, c+1, steps + 1, idx+1, s, visited);
+        }
+ 
+        if((ch == '?' || ch == 'L') && !visited[r][c-1]) {
+            count += dfs(r, c-1, steps + 1,idx+1, s, visited);
+        }
+ 
+        if((ch == '?' || ch == 'U') && !visited[r-1][c]) {
+            count += dfs(r-1, c, steps + 1,idx+1, s, visited);
+        }
+ 
+        if((ch == '?' || ch == 'D') && !visited[r+1][c]) {
+            count += dfs(r+1, c, steps + 1,idx+1, s, visited);
+        }
+ 
+        visited[r][c] = false;
+        return count;
+    }
+ 
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+ 
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+ 
+        out.flush();
+        out.close();
+    }
+ 
+    static class FastScanner {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer("");
+ 
+        String next() {
+            while (!st.hasMoreTokens()) {
+                try {
+                    String line = br.readLine();
+                    if (line == null) return "";
+                    st = new StringTokenizer(line);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
+        }
+ 
+        int nextInt() { return Integer.parseInt(next()); }
+        long nextLong() { return Long.parseLong(next()); }
+        double nextDouble() { return Double.parseDouble(next()); }
+        String nextLine() {
+            String str = "";
+            try { str = br.readLine(); }
+            catch (IOException e) { e.printStackTrace(); }
+            return str;
+        }
+    }
+}
