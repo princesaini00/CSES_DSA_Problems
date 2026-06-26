@@ -1,0 +1,101 @@
+import java.io.*;
+import java.util.*;
+ 
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        String s = fs.next();
+ 
+        int n = s.length();
+ 
+        int[] freq = new int[26];
+        for(char ch :  s.toCharArray()) {
+            freq[ch - 'A']++;
+        }
+ 
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < n; i++) {
+            boolean placed = false;
+ 
+            for(int j = 0; j < 26; j++) {
+                if(i > 0 && sb.charAt(i-1) == (char)(j + 'A')) continue;
+ 
+                if (freq[j] > 0) {
+                    freq[j]--;
+ 
+                    if (isPos(j, n - i - 1, freq)) {
+                        sb.append((char)('A' + j));
+                        placed = true;
+                        break;
+                    }
+ 
+                    freq[j]++;
+                }
+            }
+ 
+            if(!placed) {
+                break;
+            }
+        }
+ 
+        if(sb.length() == n) {
+            out.println(sb.toString());
+        } else {
+            out.println(-1);
+        }
+        return;
+    }
+ 
+    private static boolean isPos(int ch, int remaining, int[] freq) {
+        for (int i = 0; i < 26; i++) {
+            int limit = (i == ch)
+                    ? remaining / 2
+                    : (remaining + 1) / 2;
+ 
+            if (freq[i] > limit) {
+                return false;
+            }
+        }
+        return true;
+    }
+ 
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+ 
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+ 
+        out.flush();
+        out.close();
+    }
+ 
+    static class FastScanner {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer("");
+ 
+        String next() {
+            while (!st.hasMoreTokens()) {
+                try {
+                    String line = br.readLine();
+                    if (line == null) return "";
+                    st = new StringTokenizer(line);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
+        }
+ 
+        int nextInt() { return Integer.parseInt(next()); }
+        long nextLong() { return Long.parseLong(next()); }
+        double nextDouble() { return Double.parseDouble(next()); }
+        String nextLine() {
+            String str = "";
+            try { str = br.readLine(); }
+            catch (IOException e) { e.printStackTrace(); }
+            return str;
+        }
+    }
+}
