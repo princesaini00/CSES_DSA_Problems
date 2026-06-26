@@ -1,0 +1,71 @@
+import java.io.*;
+import java.util.*;
+ 
+import static java.lang.System.out;
+ 
+public class Main {
+    private static long ans = Long.MAX_VALUE;
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n =  fs.nextInt();
+        int[] arr =  new int[n];
+ 
+        long totalSum = 0;
+        for (int i = 0; i < n; i++) {
+            arr[i] = fs.nextInt();
+            totalSum += arr[i];
+        }
+ 
+        check(n, arr, 0, totalSum);
+        out.println(ans);
+    }
+ 
+    private static void check(int n, int[] arr, long curSum, long totalSum) {
+        if(n == 0) {
+            ans = Math.min(ans, Math.abs(totalSum - 2 * curSum));
+            return;
+        }
+        check(n-1, arr, curSum + arr[n-1], totalSum);
+        check(n-1, arr, curSum, totalSum);
+    }
+ 
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+ 
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+ 
+        out.flush();
+        out.close();
+    }
+ 
+    static class FastScanner {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer("");
+ 
+        String next() {
+            while (!st.hasMoreTokens()) {
+                try {
+                    String line = br.readLine();
+                    if (line == null) return "";
+                    st = new StringTokenizer(line);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
+        }
+ 
+        int nextInt() { return Integer.parseInt(next()); }
+        long nextLong() { return Long.parseLong(next()); }
+        double nextDouble() { return Double.parseDouble(next()); }
+        String nextLine() {
+            String str = "";
+            try { str = br.readLine(); }
+            catch (IOException e) { e.printStackTrace(); }
+            return str;
+        }
+    }
+}
