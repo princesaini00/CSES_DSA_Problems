@@ -1,0 +1,183 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    private static final int MOD = (int) 1e9+7;
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int k = fs.nextInt();
+
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) {
+            arr[i] = fs.nextInt();
+        }
+
+        int[][] dp = new int[n+1][k+1];
+//        dp[i][k] no of ways such that upto prefix of length i
+//        k is the last element used
+
+        for(int i = 1; i <= k; i++){
+            if(arr[0] == i || arr[0] == 0) {
+                dp[1][i] = 1;
+            }
+        }
+
+        for(int i = 2; i <= n; i++) {
+            for(int j = 1; j <= k; j++) {
+
+//                if last element wasn't j or 0, then no way it can be j, then not possible
+                if(arr[i-1] != j && arr[i-1] != 0) {
+                    dp[i][j] = 0;
+                    continue;
+                }
+
+                for(int prev = j-1; prev <= j+1; prev++){
+                    if(prev < 1 || prev > k) continue;
+                    dp[i][j] = (dp[i][j] + dp[i-1][prev]) % MOD;
+                }
+            }
+        }
+
+        int ways = 0;
+        for(int i = 1; i <= k; i++){
+            ways = (ways + dp[n][i]) % MOD;
+        }
+        out.println(ways);
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
