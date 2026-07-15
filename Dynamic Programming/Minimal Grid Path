@@ -1,0 +1,235 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+
+        char[][] grid = new char[n][n];
+        for (int i = 0; i < n; i++) {
+            grid[i] = fs.next().toCharArray();
+        }
+
+        char[] result = new char[2 * n - 1];
+        result[0] = grid[0][0];
+
+        // 1D arrays acting as static queues for layers.
+        // A diagonal can have at most N elements.
+        int[] curQueueR = new int[n];
+        int[] curQueueC = new int[n];
+        int[] nextQueueR = new int[n];
+        int[] nextQueueC = new int[n];
+
+        int curSize = 0;
+        int nextSize = 0;
+
+        // Initialize with starting cell (0, 0)
+        curQueueR[curSize] = 0;
+        curQueueC[curSize] = 0;
+        curSize++;
+
+        // A flat 1D boolean visited array is much faster than 2D
+        boolean[] visited = new boolean[n * n];
+        visited[0] = true;
+
+        int steps = 2 * n - 2;
+        for (int step = 0; step < steps; step++) {
+            char minChar = 'Z' + 1;
+            nextSize = 0;
+
+            // Step 1: Scan current layer, identify neighbors, find minimum character
+            for (int i = 0; i < curSize; i++) {
+                int r = curQueueR[i];
+                int c = curQueueC[i];
+
+                // Right neighbor
+                if (c + 1 < n) {
+                    int nextIdx = r * n + (c + 1);
+                    if (!visited[nextIdx]) {
+                        visited[nextIdx] = true;
+                        char ch = grid[r][c + 1];
+                        if (ch < minChar) {
+                            minChar = ch;
+                            nextSize = 0; // Found a smaller character, reset the next layer list
+                        }
+                        if (ch == minChar) {
+                            nextQueueR[nextSize] = r;
+                            nextQueueC[nextSize] = c + 1;
+                            nextSize++;
+                        }
+                    }
+                }
+
+                // Down neighbor
+                if (r + 1 < n) {
+                    int nextIdx = (r + 1) * n + c;
+                    if (!visited[nextIdx]) {
+                        visited[nextIdx] = true;
+                        char ch = grid[r + 1][c];
+                        if (ch < minChar) {
+                            minChar = ch;
+                            nextSize = 0; // Reset
+                        }
+                        if (ch == minChar) {
+                            nextQueueR[nextSize] = r + 1;
+                            nextQueueC[nextSize] = c;
+                            nextSize++;
+                        }
+                    }
+                }
+            }
+
+            result[step + 1] = minChar;
+
+            // Step 2: Swap the next queue into the current queue
+            int[] tempR = curQueueR;
+            int[] tempC = curQueueC;
+
+            curQueueR = nextQueueR;
+            curQueueC = nextQueueC;
+
+            nextQueueR = tempR;
+            nextQueueC = tempC;
+
+            curSize = nextSize;
+        }
+
+        out.println(new String(result));
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
