@@ -1,0 +1,181 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    private static final int MOD = 1_000_000_007;
+    private static long calc(int i, int n, int t, long[][] dp) {
+        if(t == 0) {
+            return 1;
+        }
+        if (i > n) {
+            return 0;
+        }
+        if(dp[i][t] != -1) {
+            return dp[i][t];
+        }
+
+        long take = 0;
+        if(i <= t) {
+            take = calc(i + 1, n, t - i, dp) % MOD;
+        }
+        long skip = calc(i + 1, n, t, dp) % MOD;
+
+        return dp[i][t] = (take + skip) % MOD;
+    }
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int sum = n * (n + 1) / 2;
+        if(sum % 2 == 1) {
+            out.println(0);
+            return;
+        }
+
+        int target = sum / 2;
+
+        long[][] dp = new long[n + 1][target + 1];
+        for(long[] row : dp) {
+            Arrays.fill(row, -1L);
+        }
+
+//        to avoid divide by 2 here, as module here, track only upto n-1, as one set will have n
+//        so will not count that one
+        long ans = calc(1, n-1, target, dp);
+        out.println(ans);
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
