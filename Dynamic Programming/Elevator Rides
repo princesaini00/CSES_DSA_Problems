@@ -1,0 +1,204 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    private static class Pair {
+        long rides;
+        long lastWeight;
+        public Pair(long rides, long lastWeight) {
+            this.rides = rides;
+            this.lastWeight = lastWeight;
+        }
+    }
+
+    private static boolean isBetter(Pair a, Pair b) {
+        if (a.rides != b.rides) {
+            return a.rides < b.rides; // Fewer rides is better
+        }
+        return a.lastWeight < b.lastWeight; // Less weight in last ride is better
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int x = fs.nextInt();
+        int[] weights = new int[n];
+        for (int i = 0; i < n; i++) {
+            weights[i] = fs.nextInt();
+        }
+
+//        dp[mask] = {min rides, total weight in last ride}
+//        initially, there is 1 ride going with totalweight added 0 till now
+//        so bitmask 00...000 = dp[0], that is no person is selected out of max 20
+        int size = 1 << n;
+        Pair[] dp = new Pair[size];
+        long INF = Long.MAX_VALUE;
+        Arrays.fill(dp, new Pair(INF, INF));
+
+        dp[0] = new Pair(1, 0);
+
+        for (int mask = 0; mask < size; mask++) {
+            long rides = dp[mask].rides;
+            long lastWeight = dp[mask].lastWeight;
+
+            if(rides == INF) {
+                continue;
+            }
+
+//            try to add all people who is not already in this mask
+            for(int i = 0; i < n; i++) {
+                if((mask & (1 << i)) != 0) continue;
+
+                int newMask = mask | (1 << i);
+                Pair candidate;
+
+                if(lastWeight + weights[i] <= x) {
+                    candidate = new Pair(rides, lastWeight + weights[i]);
+                } else {
+                    candidate = new Pair(rides + 1, weights[i]);
+                }
+
+                // Update dp[newMask] if candidate is better
+                if (isBetter(candidate, dp[newMask])) {
+                    dp[newMask] = candidate;
+                }
+            }
+        }
+        out.println(dp[size-1].rides);
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
