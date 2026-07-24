@@ -1,0 +1,202 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        long[] h = new long[n];
+        for (int i = 0; i < n; i++) {
+            h[i] = fs.nextLong();
+        }
+
+//        find left taller for each index using monotonic stack
+        int[] L = new int[n];
+        Arrays.fill(L, -1);
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        for (int i = 0; i < n; i++) {
+            while (!stack.isEmpty() && h[stack.peek()] <= h[i]) {
+                stack.pop();
+            }
+            if (!stack.isEmpty()) {
+                L[i] = stack.peek();
+            }
+            stack.push(i);
+        }
+
+        // Clear stack for right pass
+        stack.clear();
+
+//        similarly for right side
+        int[] R = new int[n];
+        Arrays.fill(R, -1);
+
+        for (int i = n - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && h[stack.peek()] <= h[i]) {
+                stack.pop();
+            }
+            if (!stack.isEmpty()) {
+                R[i] = stack.peek();
+            }
+            stack.push(i);
+        }
+
+//        Sort indices by height DESCENDING
+        Integer[] order = new Integer[n];
+        for (int i = 0; i < n; i++) order[i] = i;
+        Arrays.sort(order, (a, b) -> Long.compare(h[b], h[a]));
+
+//        dp[i] is the total mountains that have traversed upto index i
+        int[] dp = new int[n];
+        Arrays.fill(dp, 1);
+        int maxAns = 1;
+
+        for(int idx : order) {
+            if(L[idx] != -1) {
+                dp[idx] = Math.max(dp[idx], dp[L[idx]] + 1);
+            }
+            if(R[idx] != -1) {
+                dp[idx] = Math.max(dp[idx], dp[R[idx]] + 1);
+            }
+            maxAns = Math.max(maxAns, dp[idx]);
+        }
+
+        out.println(maxAns);
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
