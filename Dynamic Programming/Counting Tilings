@@ -1,0 +1,198 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    private static final int MOD = 1_000_000_007;
+    private static List<Integer>[] transitions;
+
+    private static void generate_next_masks(int cur_mask, int row, int next_mask, int n, List<Integer> next_masks) {
+        if (row == n) {
+            next_masks.add(next_mask);
+            return;
+        }
+
+        // Case 1: Row is already filled by horizontal domino from previous column
+        if ((cur_mask & (1 << row)) != 0) {
+            generate_next_masks(cur_mask, row + 1, next_mask, n, next_masks);
+        } else {
+            // Case 2: Place a horizontal domino (extends into next column)
+            generate_next_masks(cur_mask, row + 1, next_mask | (1 << row), n, next_masks);
+
+            // Case 3: Place a vertical domino (if next row in mask is also empty)
+            if (row + 1 < n && (cur_mask & (1 << (row + 1))) == 0) {
+                generate_next_masks(cur_mask, row + 2, next_mask, n, next_masks);
+            }
+        }
+    }
+
+    private static int calc(int col, int mask, int m, int n, int[][] dp) {
+        if (col == m + 1) {
+            return mask == 0 ? 1 : 0;
+        }
+
+        if (dp[col][mask] != -1) return dp[col][mask];
+
+        long ans = 0;
+        // Use precomputed transitions instead of recomputing
+        for (int next_mask : transitions[mask]) {
+            ans = (ans + calc(col + 1, next_mask, m, n, dp)) % MOD;
+        }
+
+        return dp[col][mask] = (int) ans;
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        int numMasks = 1 << n;
+
+        // Precompute transitions once
+        transitions = new ArrayList[numMasks];
+        for (int mask = 0; mask < numMasks; mask++) {
+            transitions[mask] = new ArrayList<>();
+            generate_next_masks(mask, 0, 0, n, transitions[mask]);
+        }
+
+        int[][] dp = new int[m + 2][numMasks];
+        for (int[] row : dp) Arrays.fill(row, -1);
+
+        int ans = calc(1, 0, m, n, dp);
+        out.println(ans);
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
