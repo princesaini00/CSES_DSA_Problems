@@ -1,0 +1,226 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    private static final int[][] dirs = {{0,1},{1,0},{0,-1},{-1,0}};   //R, D, L, U
+    private static final char[] dirMark = {'R', 'D', 'L', 'U'};
+
+    static class Node {
+        int row;
+        int col;
+        public Node(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        int startR = -1, startC = -1, endR = -1, endC = -1;
+
+        char[][] rooms = new char[n][m];
+        for (int i = 0; i < n; i++) {
+            String s = fs.next();
+            rooms[i] = s.toCharArray();
+            for (int j = 0; j < m; j++) {
+                if(rooms[i][j] == 'A') {
+                    startR = i;
+                    startC = j;
+                } else if(rooms[i][j] == 'B') {
+                    endR = i;
+                    endC = j;
+                }
+            }
+        }
+
+        Queue<Node> q = new LinkedList<>();
+        q.offer(new Node(startR, startC));
+
+        int[][] parentDir = new int[n][m];
+        for(int[] row : parentDir) {
+            Arrays.fill(row, -1);
+        }
+        parentDir[startR][startC] = 4;
+
+        boolean pathFound = false;
+
+        while(!q.isEmpty()) {
+            Node curr = q.poll();
+            int currRow = curr.row;
+            int currCol = curr.col;
+
+            if(currRow == endR && currCol == endC) {
+                pathFound = true;
+                break;
+            }
+
+            for(int i = 0; i < 4; i++) {
+                int nr = dirs[i][0] + currRow;
+                int nc = dirs[i][1] + currCol;
+
+                if(nr >= 0 && nr < n && nc >= 0 && nc < m && rooms[nr][nc] != '#' && parentDir[nr][nc] == -1) {
+                    parentDir[nr][nc] = i;
+                    q.add(new Node(nr, nc));
+                }
+            }
+        }
+
+        if(!pathFound) {
+            out.println("NO");
+            return;
+        }
+
+        StringBuilder path = new StringBuilder();
+        int currR = endR, currC = endC;
+
+        while(currR != startR || currC != startC) {
+            int parentDirIdx = parentDir[currR][currC];
+            char parentDirChar = dirMark[parentDirIdx];
+            path.append(parentDirChar);
+
+            currR -= dirs[parentDirIdx][0];
+            currC -= dirs[parentDirIdx][1];
+        }
+
+        out.println("YES");
+        out.println(path.length());
+        out.println(path.reverse().toString());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
