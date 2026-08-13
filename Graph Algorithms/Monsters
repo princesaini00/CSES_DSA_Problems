@@ -1,0 +1,247 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static final int INF = (int) 1e9;
+    static int[] dx = {-1, 1, 0, 0};
+    static int[] dy = {0, 0, -1, 1};
+    static char[] dirName = {'U', 'D', 'L', 'R'};
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        char[][] labyrinth = new char[n][m];
+        int[][] distM = new int[n][m];
+        int[][] distA = new int[n][m];
+        int[][] parentDir = new int[n][m];
+
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(distM[i], INF);
+            Arrays.fill(distA[i], INF);
+            Arrays.fill(parentDir[i], -1);
+        }
+
+        Queue<int[]> mQueue = new LinkedList<>();
+        Queue<int[]> aQueue = new LinkedList<>();
+
+        for (int i = 0; i < n; i++) {
+            String s = fs.next();
+            for (int j = 0; j < m; j++) {
+                labyrinth[i][j] = s.charAt(j);
+                if (labyrinth[i][j] == 'M') {
+                    mQueue.offer(new int[]{i, j});
+                    distM[i][j] = 0;
+                } else if (labyrinth[i][j] == 'A') {
+                    aQueue.offer(new int[]{i, j});
+                    distA[i][j] = 0;
+                }
+            }
+        }
+
+        // 1. Multi-source BFS for all Monsters
+        while (!mQueue.isEmpty()) {
+            int[] cur = mQueue.poll();
+            int r = cur[0], c = cur[1];
+
+            for (int i = 0; i < 4; i++) {
+                int nr = r + dx[i];
+                int nc = c + dy[i];
+
+                if (nr >= 0 && nr < n && nc >= 0 && nc < m && labyrinth[nr][nc] != '#') {
+                    if (distM[nr][nc] > distM[r][c] + 1) {
+                        distM[nr][nc] = distM[r][c] + 1;
+                        mQueue.offer(new int[]{nr, nc});
+                    }
+                }
+            }
+        }
+
+        // 2. Single-source BFS for Player A
+        int escapeR = -1, escapeC = -1;
+
+        while (!aQueue.isEmpty()) {
+            int[] cur = aQueue.poll();
+            int r = cur[0], c = cur[1];
+
+            // If player reaches any boundary cell first, we found our exit
+            if (r == 0 || c == 0 || r == n - 1 || c == m - 1) {
+                escapeR = r;
+                escapeC = c;
+                break;
+            }
+
+            for (int i = 0; i < 4; i++) {
+                int nr = r + dx[i];
+                int nc = c + dy[i];
+
+                if (nr >= 0 && nr < n && nc >= 0 && nc < m && labyrinth[nr][nc] != '#') {
+                    int nextDist = distA[r][c] + 1;
+                    // Player must reach before any monster
+                    if (nextDist < distM[nr][nc] && distA[nr][nc] == INF) {
+                        distA[nr][nc] = nextDist;
+                        parentDir[nr][nc] = i;
+                        aQueue.offer(new int[]{nr, nc});
+                    }
+                }
+            }
+        }
+
+        if (escapeR == -1) {
+            out.println("NO");
+            return;
+        }
+
+        // 3. Reconstruct the path backwards from escape location to 'A'
+        out.println("YES");
+        out.println(distA[escapeR][escapeC]);
+
+        StringBuilder path = new StringBuilder();
+        int currR = escapeR;
+        int currC = escapeC;
+
+        while (parentDir[currR][currC] != -1) {
+            int d = parentDir[currR][currC];
+            path.append(dirName[d]);
+            currR -= dx[d];
+            currC -= dy[d];
+        }
+
+        out.println(path.reverse().toString());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
