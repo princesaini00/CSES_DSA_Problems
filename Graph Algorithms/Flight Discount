@@ -1,0 +1,225 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static class Edge {
+        int v;
+        long d;
+        Edge(int v, long w) {
+            this.v = v;
+            this.d = w;
+        }
+    }
+
+    static class State implements Comparable<State> {
+        int node;
+        int couponUsed;
+        long distance;
+        State(int node, int couponUsed, long distance) {
+            this.node = node;
+            this.couponUsed = couponUsed;
+            this.distance = distance;
+        }
+
+        @Override
+        public int compareTo(State o) {
+            return Long.compare(this.distance, o.distance);
+        }
+    }
+
+    static final long INF = (long) 1e17;
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        List<List<Edge>> graph = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            graph.add(new ArrayList<>());
+        }
+
+        for (int i = 0; i < m; i++) {
+            int u = fs.nextInt()-1;
+            int v = fs.nextInt()-1;
+            long w = fs.nextLong();
+            graph.get(u).add(new Edge(v, w));
+        }
+
+        // Dijkstra with State concept
+//        [node][0] - coupon not used, [node][1] - coupon used
+        long[][] dist = new long[n + 1][2];
+        for(long[] row : dist) Arrays.fill(row, INF);
+
+        PriorityQueue<State> pq = new PriorityQueue<>();
+        pq.offer(new State(0, 0, 0));
+        dist[0][0] = 0;
+
+        while (!pq.isEmpty()) {
+            State s = pq.poll();
+            int u = s.node;
+            int couponUsed = s.couponUsed;
+            long distance = s.distance;
+
+            if(distance > dist[u][couponUsed]) continue;
+
+            for(Edge ngh : graph.get(u)) {
+                int v = ngh.v;
+                long nextDist = ngh.d;
+
+//                case 1: maintain same state of couponUsed, if 0 stay at 0, if 1 stay at 1
+                if(dist[v][couponUsed] > nextDist + distance) {
+                    dist[v][couponUsed] = nextDist + distance;
+                    pq.offer(new State(v, couponUsed, dist[v][couponUsed]));
+                }
+
+//                case 2: change of state at current node, go from 0 to 1
+                if(couponUsed == 0) {
+                    // use coupon halve price
+                    nextDist = nextDist/2;
+                    if(dist[v][1] > nextDist + distance) {
+                        dist[v][1] = nextDist + distance;
+                        pq.offer(new State(v, 1, dist[v][1]));
+                    }
+                }
+            }
+        }
+
+        out.println(dist[n-1][1]);
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
