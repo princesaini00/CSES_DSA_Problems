@@ -1,0 +1,230 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static class Edge {
+        int u, v;
+        long w;
+        Edge(int u, int v, long w) {
+            this.u = u;
+            this.v = v;
+            this.w = w;
+        }
+    }
+
+    static final long INF = (long) 1e17;
+
+    private static void bfs(int start, List<List<Integer>> graph, boolean[] visited) {
+        Queue<Integer> q = new ArrayDeque<>();
+        q.add(start);
+        visited[start] = true;
+
+        while (!q.isEmpty()) {
+            int curr = q.poll();
+            for (int neighbor : graph.get(curr)) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    q.add(neighbor);
+                }
+            }
+        }
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        List<Edge> edges = new ArrayList<>();
+        List<List<Integer>> adj = new ArrayList<>();
+        List<List<Integer>> revAdj = new ArrayList<>();
+
+        for (int i = 0; i <= n; i++) {
+            adj.add(new ArrayList<>());
+            revAdj.add(new ArrayList<>());
+        }
+
+        for (int i = 0; i < m; i++) {
+            int u = fs.nextInt();
+            int v = fs.nextInt();
+            long w = fs.nextLong();
+            // Negate weight for minimum distance problem
+            edges.add(new Edge(u, v, -w));
+            adj.get(u).add(v);
+            revAdj.get(v).add(u);
+        }
+
+        // 1. Check Reachability (From Node 1 & To Node N)
+        boolean[] reachableFrom1 = new boolean[n + 1];
+        boolean[] reachesN = new boolean[n + 1];
+
+        bfs(1, adj, reachableFrom1);
+        bfs(n, revAdj, reachesN);
+
+        // 2. Bellman-Ford Algorithm
+        long[] dist = new long[n + 1];
+        Arrays.fill(dist, INF);
+        dist[1] = 0;
+
+        for (int i = 1; i < n; i++) {
+            for (Edge e : edges) {
+                if (dist[e.u] != INF && dist[e.u] + e.w < dist[e.v]) {
+                    dist[e.v] = dist[e.u] + e.w;
+                }
+            }
+        }
+
+        // 3. Find if any cycle node lies on a path 1 -> Cycle -> N
+        boolean infiniteScore = false;
+        for (Edge e : edges) {
+            if (dist[e.u] != INF && dist[e.u] + e.w < dist[e.v]) {
+                // Node v is affected by a negative cycle
+                if (reachableFrom1[e.v] && reachesN[e.v]) {
+                    infiniteScore = true;
+                    break;
+                }
+            }
+        }
+
+        if (infiniteScore) {
+            out.println(-1);
+        } else {
+            out.println(-dist[n]);
+        }
+
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
