@@ -1,0 +1,227 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static class Edge {
+        int to;
+        long distance;
+        public Edge(int to, long distance) {
+            this.to = to;
+            this.distance = distance;
+        }
+    }
+    static class State implements Comparable<State> {
+        int city;
+        long distanceTillNow;
+        public State(int city, long distanceTillNow) {
+            this.city = city;
+            this.distanceTillNow = distanceTillNow;
+        }
+        @Override
+        public int compareTo(State o) {
+            return Long.compare(distanceTillNow, o.distanceTillNow);
+        }
+    }
+    private static final int MOD = 1_000_000_007;
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        List<List<Edge>> graph = new ArrayList<>();
+        for(int i = 0; i < n; i++) {
+            graph.add(new ArrayList<>());
+        }
+        for(int i = 0; i < m; i++) {
+            int u = fs.nextInt()-1;
+            int v = fs.nextInt()-1;
+            long d = fs.nextLong();
+            graph.get(u).add(new Edge(v, d));
+        }
+
+//        to store minimum distance, make an array for Dijkstra algo
+        long[] dist = new long[n];
+//        to count the no of minimum price paths for each node
+        long[] count = new long[n];
+//        to store the minimum no of edges traversed to reach at each node
+        int[] minEdges = new int[n];
+//        to store the maximum no of edges traversed to reach at each node
+        int[] maxEdges = new int[n];
+
+        Arrays.fill(dist, Long.MAX_VALUE/2);
+        Arrays.fill(minEdges, Integer.MAX_VALUE);
+        Arrays.fill(maxEdges, Integer.MIN_VALUE);
+
+        dist[0] = 0;
+        count[0] = 1;
+        minEdges[0] = 0;
+        maxEdges[0] = 0;
+
+        PriorityQueue<State> pq = new PriorityQueue<>();
+        pq.offer(new State(0, 0));
+
+        while(!pq.isEmpty()) {
+            State curr = pq.poll();
+            int u = curr.city;
+            long d = curr.distanceTillNow;
+
+            if(dist[u] < d) {
+                continue;
+            }
+
+            for(Edge e : graph.get(u)) {
+                int v = e.to;
+                long newDist = e.distance + d;
+
+                if(dist[v] > newDist) {
+                    dist[v] = newDist;
+                    count[v] = count[u];
+                    minEdges[v] = minEdges[u] + 1;
+                    maxEdges[v] = maxEdges[u] + 1;
+                    pq.offer(new State(v, newDist));
+                }
+                else if(dist[v] == newDist) {
+                    count[v] = (count[v] + count[u]) % MOD;
+                    minEdges[v] = Math.min(minEdges[v], minEdges[u] + 1);
+                    maxEdges[v] = Math.max(maxEdges[v], maxEdges[u] + 1);
+                }
+            }
+        }
+
+        out.println(dist[n-1] + " " + count[n-1] + " " + minEdges[n-1] + " " + maxEdges[n-1]);
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
