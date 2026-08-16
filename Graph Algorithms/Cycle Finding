@@ -1,0 +1,222 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static class Edge {
+        int u;
+        int v;
+        long d;
+        Edge(int u, int v, long w) {
+            this.u = u;
+            this.v = v;
+            this.d = w;
+        }
+    }
+    static final long INF = (long) 1e17;
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        List<Edge> edges = new ArrayList<>();
+
+        for (int i = 0; i < m; i++) {
+            int u = fs.nextInt()-1;
+            int v = fs.nextInt()-1;
+            long w = fs.nextLong();
+            edges.add(new Edge(u,v,w));
+        }
+
+        long[] dist = new long[n];
+//        when finding only negative cycle, it can be in any component
+//        so make all starting with 0, as negative cycle will still make values negative
+//        make it easy to detect negative cycle
+        Arrays.fill(dist,0);
+
+//        to track back cycle, take parent array
+        int[] parent = new int[n];
+        Arrays.fill(parent,-1);
+
+//        to keep track of lastnode which was relaxed
+        int lastNode = -1;
+
+//       first relax all edges using Bellman Ford algorithm (n-1) times
+        for(int i = 0; i < n; i++) {
+            lastNode = -1;
+            for(Edge e: edges) {
+                int u = e.u;
+                int v = e.v;
+                long d = e.d;
+                if(dist[u] != INF && dist[v] > dist[u] + d) {
+                    dist[v] = dist[u] + d;
+                    parent[v] = u;
+                    lastNode = v;
+                }
+            }
+        }
+
+        if(lastNode == -1) {
+            out.println("NO");
+        } else {
+            out.println("YES");
+
+//            walk back n steps to guarantee entry in cycle
+            for(int i = 0; i < n; i++) {
+                lastNode = parent[lastNode];
+            }
+
+//            find out cycle nodes
+            List<Integer> cycleNodes = new ArrayList<>();
+            int curr = lastNode;
+            while(true) {
+                cycleNodes.add(curr);
+                if(curr == lastNode && cycleNodes.size() > 1) {
+                    break;
+                }
+                curr = parent[curr];
+            }
+
+            Collections.reverse(cycleNodes);
+            StringBuilder sb = new StringBuilder();
+            for (int node : cycleNodes) {
+                sb.append(node + 1).append(" ");
+            }
+            out.println(sb.toString().trim());
+        }
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
