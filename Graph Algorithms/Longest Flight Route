@@ -1,0 +1,204 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        List<List<Integer>> graph = new ArrayList<>();
+        for(int i = 0; i < n; i++) {
+            graph.add(new ArrayList<>());
+        }
+
+        int[] indegree = new int[n];
+        for(int i = 0; i < m; i++) {
+            int u = fs.nextInt()-1;
+            int v = fs.nextInt()-1;
+            graph.get(u).add(v);
+            indegree[v]++;
+        }
+
+        Queue<Integer> q = new LinkedList<>();
+        for(int i = 0; i < n; i++) {
+            if(indegree[i] == 0) {
+                q.offer(i);
+            }
+        }
+
+        int[] dp = new int[n];
+        Arrays.fill(dp, Integer.MIN_VALUE);
+        dp[0] = 1;                             //only 1 way to reach 0
+
+        int[] parent = new int[n];
+        Arrays.fill(parent, -1);
+
+        while(!q.isEmpty()) {
+            int u = q.poll();
+
+            for(int v : graph.get(u)) {
+                if(dp[u] != Integer.MIN_VALUE && dp[v] < dp[u] + 1) {
+                    dp[v] = dp[u] + 1;
+                    parent[v] = u;
+                }
+                indegree[v]--;
+                if(indegree[v] == 0) {
+                    q.offer(v);
+                }
+            }
+        }
+
+        if(dp[n-1] == Integer.MIN_VALUE) {
+            out.println("IMPOSSIBLE");
+            return;
+        }
+
+        List<Integer> order = new ArrayList<>();
+        for(int curr = n-1; curr != -1; curr = parent[curr]) {
+            order.add(curr);
+        }
+        Collections.reverse(order);
+
+        StringBuilder sb = new StringBuilder();
+        for (int node : order) {
+            sb.append(node + 1).append(" ");
+        }
+        out.println(order.size());
+        out.println(sb.toString().trim());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
