@@ -1,0 +1,208 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static int[] succ;
+    static int[] state;  //0-unvisited, 1-visiting, 2-visited
+    static int[] ans;
+
+    private static void dfs(int startNode) {
+        List<Integer> path = new ArrayList<>();
+        int curr = startNode;
+
+        while(state[curr] == 0) {
+            state[curr] = 1;
+            path.add(curr);
+            curr = succ[curr];
+        }
+
+//        case 1: if curr is at state = 1, that found cycle
+        if(state[curr] == 1) {
+            int cycleStartIndex = path.indexOf(curr);
+            int cycleLen = path.size() - cycleStartIndex;
+
+//            all nodes in cycle will have same distance which is cycleLen
+            for(int i = cycleStartIndex; i < path.size(); i++) {
+                int node = path.get(i);
+                ans[node] = cycleLen;
+            }
+
+//            if there are any nodes in path before cycle start, then:
+            for(int i = cycleStartIndex-1; i >= 0; i--) {
+                int node = path.get(i);
+                ans[node] = 1 + ans[succ[node]];
+            }
+        }
+//        case 2: if curr is at state = 2, means we already have its ans
+        else if(state[curr] == 2) {
+            for(int i = path.size() - 1; i >= 0; i--) {
+                int node = path.get(i);
+                ans[node] = 1 + ans[succ[node]];
+            }
+        }
+
+//        Finally make all these nodes fully visited
+        for(int node : path) {
+            state[node] = 2;
+        }
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+
+        succ = new int[n];
+        state = new int[n];
+        ans = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            succ[i] = fs.nextInt()-1;
+        }
+
+        for(int i = 0; i < n; i++) {
+            if(state[i] == 0) {
+                dfs(i);
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < n; i++) {
+            sb.append(ans[i]).append(i == n-1 ? "" : " ");
+        }
+        out.println(sb.toString());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
