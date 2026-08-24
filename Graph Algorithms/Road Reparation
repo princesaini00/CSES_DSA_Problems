@@ -1,0 +1,202 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static class Edge implements Comparable<Edge> {
+        int u; int v; long cost;
+        public Edge(int u, int v, long cost) {
+            this.u = u; this.v = v; this.cost = cost;
+        }
+        @Override
+        public int compareTo(Edge o) {
+            return Long.compare(this.cost, o.cost);
+        }
+    }
+    static class DSU {
+        int[] parent;
+        public DSU(int n) {
+            parent = new int[n];
+            for (int i = 0; i < n; i++) parent[i] = i;
+        }
+        public int find(int i) {
+            if (parent[i] == i) return i;
+            return parent[i] = find(parent[i]); // Path compression
+        }
+        public boolean union(int i, int j) {
+            int rootI = find(i);
+            int rootJ = find(j);
+            if (rootI != rootJ) {
+                parent[rootI] = rootJ;
+                return true; // Successfully merged two different components
+            }
+            return false; // Already in the same component (would form a cycle)
+        }
+    }
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        List<Edge> edges = new ArrayList<>();
+        for(int i = 0; i < m; i++) {
+            int u = fs.nextInt() - 1;
+            int v = fs.nextInt() - 1;
+            long cost = fs.nextLong();
+            edges.add(new Edge(u, v, cost));
+        }
+        Collections.sort(edges);
+
+        DSU dsu = new DSU(n);
+        long minCost = 0;
+        int edgesAdded = 0;
+
+        for (Edge e : edges) {
+            if (dsu.union(e.u, e.v)) {
+                minCost += e.cost;
+                edgesAdded++;
+                if (edgesAdded == n - 1) break; // MST complete
+            }
+        }
+
+        if (edgesAdded == n - 1) {
+            out.println(minCost);
+        } else {
+            out.println("IMPOSSIBLE");
+        }
+
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
