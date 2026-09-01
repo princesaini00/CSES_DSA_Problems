@@ -1,0 +1,243 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static List<List<Integer>> graph;
+    static List<List<Integer>> revGraph;
+    static boolean[] visited;
+    static List<Integer> traversed;
+    static int[] component;
+    static int componentNumber = 0;
+
+    private static void dfs(int node, List<List<Integer>> g) {
+        visited[node] = true;
+        for (int ngh : g.get(node)) {
+            if (!visited[ngh]) {
+                dfs(ngh, g);
+            }
+        }
+        traversed.add(node);
+    }
+    private static void markStrongComponent(int node, List<List<Integer>> g) {
+        visited[node] = true;
+        component[node] = componentNumber;
+        for (int ngh : g.get(node)) {
+            if (!visited[ngh]) {
+                markStrongComponent(ngh, g);
+            }
+        }
+    }
+    private static int getNode(int node) {
+        int val = Math.abs(node);
+        return node > 0 ? 2*val : 2*val+1;
+    }
+    private static int getNot(int node) {
+        return node ^ 1; // Flips between 2*x and 2*x + 1
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        graph = new ArrayList<>();
+        revGraph = new ArrayList<>();
+        int numNodes = 2*m+2;
+
+        for(int i = 0; i < numNodes; i++) {
+            graph.add(new ArrayList<>());
+            revGraph.add(new ArrayList<>());
+        }
+
+        // Build 2-SAT Implication Graph
+        for(int i = 0; i < n; i++) {
+            char sign1 = fs.next().charAt(0);
+            int u = fs.nextInt() * (sign1 == '+' ? 1 : -1);
+            char sign2 = fs.next().charAt(0);
+            int v = fs.nextInt() * (sign2 == '+' ? 1 : -1);
+
+            int x = getNode(u);
+            int y = getNode(v);
+
+            // Clause: (X or Y) => (~X -> Y) and (~Y -> X)
+            graph.get(getNot(x)).add(y);
+            graph.get(getNot(y)).add(x);
+
+            revGraph.get(y).add(getNot(x));
+            revGraph.get(x).add(getNot(y));
+        }
+
+        traversed = new ArrayList<>();
+        visited = new boolean[numNodes];
+        for(int i = 2; i < numNodes; i++) {
+            if(!visited[i]) {
+                dfs(i, graph);
+            }
+        }
+
+        component = new int[numNodes];
+        visited = new boolean[numNodes];
+        for(int i = traversed.size()-1; i >= 0; i--) {
+            int node = traversed.get(i);
+            if(!visited[node]) {
+                componentNumber++;
+                markStrongComponent(node, revGraph);
+            }
+        }
+
+        // Check for contradictions and build assignment
+        char[] result = new char[m + 1];
+        for (int i = 1; i <= m; i++) {
+            int posNode = getNode(i);
+            int negNode = getNot(posNode);
+
+            if (component[posNode] == component[negNode]) {
+                out.println("IMPOSSIBLE");
+                return;
+            }
+
+            // In Kosaraju's, a higher scc ID means it appears LATER in topological order
+            result[i] = (component[posNode] > component[negNode]) ? '+' : '-';
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i <= m; i++) {
+            sb.append(result[i]).append(i == m ? "" : " ");
+        }
+        out.println(sb.toString());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
