@@ -1,0 +1,186 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+
+        // Edge case for n = 1
+        if (n == 1) {
+            System.out.println("01");
+            return;
+        }
+
+//        For length n, we take n-1 length string of bits as nodes, then transition of 0 and 1, from each node
+        int numNodes = (1 << (n-1));
+
+//        after each transition we want only last (total nodes - 1) characters as next node again
+        int mask = numNodes - 1;
+
+//        As all has two out-degree, and two in-degree, we can get Eulerian Circuit
+        int[] edgeIndex = new int[numNodes];
+        StringBuilder circuit = new StringBuilder();
+        Deque<Integer> stack = new ArrayDeque<>();
+        stack.push(0);
+
+        while(!stack.isEmpty()) {
+            int u = stack.peek();
+
+            if(edgeIndex[u] < 2) {
+                int bit = edgeIndex[u];
+                edgeIndex[u]++;
+                int v = ((u << 1) | bit) & mask;
+                stack.push(v);
+            } else {
+                int node = stack.pop();
+                if (!stack.isEmpty()) {
+                    // The bit that led to this node is node's LSB
+                    circuit.append(node & 1);
+                }
+            }
+        }
+
+        // Start with n-1 zeros, then append the Eulerian trail sequence
+       StringBuilder sb = new StringBuilder();
+       sb.append(circuit);
+       for(int i = 0; i < n-1; i++) {
+           sb.append('0');
+       }
+       out.println(sb.toString());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
