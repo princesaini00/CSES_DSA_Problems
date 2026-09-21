@@ -1,0 +1,190 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+        int MOD = (int) 1e9+7;
+
+//        instead of outgoing edges, we will store incoming edges
+        List<List<Integer>> revGraph = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            revGraph.add(new ArrayList<>());
+        }
+
+        for(int i = 0; i < m; i++) {
+            int a = fs.nextInt() - 1;
+            int b = fs.nextInt() - 1;
+            revGraph.get(b).add(a);
+        }
+
+        int[][] dp = new int[1 << n][n];
+        dp[1][0] = 1;
+
+        for(int mask = 1; mask < (1 << n); mask++) {
+
+//            we need to start from node 0 always, so check that should be visited already
+            if((mask & 1) == 0) continue;
+
+//            also if node n-1 is visited already, but all nodes are not visited, not acceptable
+            if((mask & (1 << (n-1))) != 0 && mask != (1 << n) - 1) continue;
+
+//            otherwise check for each node v
+            for(int v = 0; v < n; v++) {
+
+//                if v is not visited, then stop
+                if((mask & (1 << v)) == 0) continue;
+
+//                check from where v came, say u
+                int prevMask = mask ^ (1 << v);
+                for(int u : revGraph.get(v)) {
+
+//                    check if u was present in prevmask
+                    if((prevMask & (1 << u)) != 0 && dp[prevMask][u] > 0) {
+                        dp[mask][v] = (dp[mask][v] + dp[prevMask][u]) % MOD;
+                    }
+
+                }
+            }
+        }
+
+//        ans will be all nodes visited, and at last node right now
+        out.print(dp[(1 << n) - 1][n - 1]);
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
