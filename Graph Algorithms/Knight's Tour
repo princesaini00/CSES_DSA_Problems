@@ -1,0 +1,202 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    private static int[][] dirs = {{2, -1}, {2, 1}, {-2, -1}, {-2, 1}, {1, 2}, {-1, 2}, {1, -2}, {-1, -2}};
+
+    private static int getDegree(int row, int col, int[][] grid) {
+        int count = 0;
+        for(int[] d : dirs) {
+            int x = row + d[0];
+            int y = col + d[1];
+            if(x >= 0 && x < 8 && y >= 0 && y < 8 && grid[x][y] == 0) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static boolean backtrack(int i, int j, int step, int[][] grid) {
+        if(step == 65) {
+            return true;
+        }
+
+//        using Warnsdorf' rule, move to location with smallest number of possibilities for next move
+        List<int[]> nextMoves = new ArrayList<>();
+        for(int[] d : dirs) {
+            int x = i + d[0];
+            int y = j + d[1];
+            if(x >= 0 && x < 8 && y >= 0 && y < 8 && grid[x][y] == 0) {
+                int degree = getDegree(x, y, grid);
+                nextMoves.add(new int[]{x, y, degree});
+            }
+        }
+
+        Collections.sort(nextMoves, (a, b) -> a[2] - b[2]);
+
+        for(int[] nextMove : nextMoves) {
+            int nr = nextMove[0];
+            int nc = nextMove[1];
+            grid[nr][nc] = step;
+            if(backtrack(nr, nc, step + 1, grid)) {
+                return true;
+            }
+            grid[nr][nc] = 0;
+        }
+        return false;
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int x = fs.nextInt();
+        int y = fs.nextInt();
+
+        int[][] grid = new int[8][8];
+        grid[y-1][x-1] = 1;
+
+        backtrack(y-1, x-1, 2, grid);
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+                sb.append(grid[i][j]).append(j == 7 ? "" : " ");
+            }
+            sb.append("\n");
+        }
+        out.println(sb.toString());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
