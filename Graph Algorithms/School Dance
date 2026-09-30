@@ -1,0 +1,290 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static class Edge {
+        int u, v;
+        long cap, flow;
+        int rev;
+
+        public Edge(int u, int v, long cap, int rev) {
+            this.u = u;
+            this.v = v;
+            this.cap = cap;
+            this.flow = 0;
+            this.rev = rev;
+        }
+    }
+
+    static List<Edge>[] graph;
+    static int[] level;
+    static int[] ptr;
+    static boolean[] visited;
+
+    private static long dinic(int source, int sink, int n) {
+        long maxFlow = 0;
+        level = new int[n];
+
+        while(bfs(source, sink, n)) {
+            ptr = new int[n];
+            while(true) {
+                long pushed = dfs(source, sink, Long.MAX_VALUE);
+                if(pushed == 0) break;
+                maxFlow += pushed;
+            }
+        }
+        return maxFlow;
+    }
+
+    private static boolean bfs(int source, int sink, int n) {
+        Arrays.fill(level, -1);
+        level[source] = 0;
+
+        Deque<Integer> q = new ArrayDeque<>();
+        q.offer(source);
+
+        while (!q.isEmpty()) {
+            int u = q.poll();
+            for(Edge e : graph[u]) {
+                if(e.cap - e.flow > 0 && level[e.v] == -1) {
+                    level[e.v] = level[u] + 1;
+                    q.offer(e.v);
+                }
+            }
+        }
+        return level[sink] != -1;
+    }
+
+    private static long dfs(int u, int sink, long pushed) {
+        if(pushed == 0 || u == sink) {
+            return pushed;
+        }
+
+        for(; ptr[u] < graph[u].size(); ptr[u]++) {
+            Edge e = graph[u].get(ptr[u]);
+            int v  = e.v;
+
+            if(level[v] != 1 + level[u] || e.cap - e.flow == 0) continue;
+
+            long flow = dfs(v, sink, Math.min(pushed, e.cap - e.flow));
+            if(flow == 0) continue;
+
+            e.flow += flow;
+            graph[v].get(e.rev).flow -= flow;
+
+            return flow;
+        }
+        return 0;
+    }
+
+    private static void dfsResidual(int u) {
+        visited[u] = true;
+        for (Edge e : graph[u]) {
+            if (e.cap - e.flow > 0 && !visited[e.v]) {
+                dfsResidual(e.v);
+            }
+        }
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+        int k = fs.nextInt();
+
+//        1 source, n boys, m girls, 1 sink
+        int size = n + m + 2;
+        graph = new ArrayList[size];
+
+        for (int i = 0; i < size; i++) {
+            graph[i] = new ArrayList<>();
+        }
+
+//        0 - source
+//        1 to n - boy nodes
+//        n + 1 to n + m - girl nodes
+//        n + m + 1 - sink
+
+//        connect all left side boy nodes to source 0 with capacity 1
+        for(int b = 1; b <= n; b++) {
+            Edge forward = new Edge(0, b, 1, graph[b].size());
+            Edge backward = new Edge(b, 0, 0, graph[0].size());
+            graph[0].add(forward);
+            graph[b].add(backward);
+        }
+
+//        connect all right side girl nodes to sink n+m+1 with capacity 1
+        int sink = n + m + 1;
+        for(int g = n+1; g <= n+m; g++) {
+            Edge forward = new Edge(g, sink, 1, graph[sink].size());
+            Edge backward = new Edge(sink, g, 0, graph[g].size());
+            graph[g].add(forward);
+            graph[sink].add(backward);
+        }
+
+//        connect all boy and girl nodes with given pair connections
+        List<Edge> boyToGirlEdges = new ArrayList<>();
+        for(int i = 0; i < k; i++) {
+//            boy node
+            int u = fs.nextInt();
+//            girl node
+            int v = fs.nextInt() + n;
+
+            // Undirected edge: both directions have capacity = 1
+            Edge a1 = new Edge(u, v, 1, graph[v].size());
+            Edge b1 = new Edge(v, u, 0, graph[u].size());
+            graph[u].add(a1);
+            graph[v].add(b1);
+            boyToGirlEdges.add(a1);
+        }
+
+//        Apply Dinic's Algorithm to find max flow (source, sink, totalNodes)
+        long maxFlow = dinic(0, sink, size);
+
+        // Print maxFlow which equal total matching pairs
+        out.println(maxFlow);
+
+        // Print all matched pairs (where flow was pushed)
+        for (Edge e : boyToGirlEdges) {
+            if (e.flow == 1) {
+                int boy = e.u;
+                int girl = e.v - n; // Convert back to 1-indexed Girl ID
+                out.println(boy + " " + girl);
+            }
+        }
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
