@@ -1,0 +1,263 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static int[] value;
+    static int[] subtreeSize;
+    static int[] arr;
+    static List<Integer>[] adj;
+    static int idx = 0;
+    static long[] segmentTree;
+    static int[] tin;
+
+    private static void dfs(int u, boolean[] visited) {
+        visited[u] = true;
+        tin[u] = idx;
+        arr[idx++] = value[u];
+        for(int v : adj[u]) {
+            if(!visited[v]) {
+                dfs(v, visited);
+            }
+        }
+    }
+
+    private static void buildSegmentTree(int i, int l, int r, int[] arr) {
+        if(l == r) {
+            segmentTree[i] = arr[l];
+            return;
+        }
+        int mid = (l+r)/2;
+        buildSegmentTree(2*i+1, l, mid, arr);
+        buildSegmentTree(2*i+2, mid+1, r, arr);
+        segmentTree[i] = segmentTree[2*i+1] + segmentTree[2*i+2];
+    }
+
+
+    private static void updateSegmentTree(int node, int val, int i, int l, int r) {
+        if(l == r) {
+            segmentTree[i] = val;
+            return;
+        }
+        int mid = (l+r)/2;
+        if(node <= mid) {
+            updateSegmentTree(node, val, 2*i+1, l, mid);
+        } else {
+            updateSegmentTree(node, val, 2*i+2, mid + 1, r);
+        }
+        segmentTree[i] = segmentTree[2*i+1] + segmentTree[2*i+2];
+    }
+
+    private static long querySegmentTree(int start, int end, int i, int l, int r) {
+        if(end < l || start > r) return 0;
+        if (start <= l && r <= end) return segmentTree[i];
+        int mid = (l+r)/2;
+        return querySegmentTree(start, end, 2*i+1, l, mid) + querySegmentTree(start, end, 2*i+2, mid + 1, r);
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int q = fs.nextInt();
+
+        value = new int[n];
+        for (int i = 0; i < n; i++) {
+            value[i] = fs.nextInt();
+        }
+
+        adj = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<>();
+        }
+        for (int i = 0; i < n-1; i++) {
+            int a = fs.nextInt() - 1;
+            int b = fs.nextInt() - 1;
+            adj[a].add(b);
+            adj[b].add(a);
+        }
+
+//        Reroot the tree at node 0
+        int[] parent = new int[n];
+        Arrays.fill(parent, -1);
+
+        Queue<Integer> qs = new LinkedList<>();
+        qs.add(0);
+        List<Integer> order = new ArrayList<>();
+        while (!qs.isEmpty()) {
+            int u = qs.poll();
+            order.add(u);
+            for (int v : adj[u]) {
+                if(v != parent[u]) {
+                    parent[v] = u;
+                    qs.add(v);
+                }
+            }
+        }
+
+        subtreeSize = new int[n];
+        Arrays.fill(subtreeSize, 1);
+        for (int i = n-1; i > 0; i--) {
+            int u = order.get(i);
+            subtreeSize[parent[u]] += subtreeSize[u];
+        }
+
+        arr = new int[n];
+        tin = new int[n];
+        dfs(0, new boolean[n]);
+
+
+        segmentTree = new long[4*n];
+        buildSegmentTree(0, 0, n-1, arr);
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < q; i++) {
+            int type = fs.nextInt();
+            if(type == 1) {
+                int node = fs.nextInt() - 1;
+                int val = fs.nextInt();
+                updateSegmentTree(tin[node], val, 0, 0, n-1);
+            } else {
+                int node = fs.nextInt() - 1;
+                int start = tin[node];
+                int end = start + subtreeSize[node] - 1;
+
+                long ans = querySegmentTree(start, end, 0, 0, n - 1);
+                sb.append(ans).append("\n");
+            }
+        }
+        out.println(sb.toString().trim());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
