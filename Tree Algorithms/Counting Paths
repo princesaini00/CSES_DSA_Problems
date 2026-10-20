@@ -1,0 +1,251 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    static int[][] up;
+    static int[] depth;
+    static int col;
+
+    private static int lca(int a, int b) {
+//        Make both nodes have equal depth
+        if (depth[a] < depth[b]) {
+            int temp = a;
+            a = b;
+            b = temp;
+        }
+        int diff = depth[a] - depth[b];
+
+//        Make jump for diff using binary lifting on a to reach same level as b
+        for(int j = 0; j < col; j++) {
+            if(((diff >> j) & 1) != 0) {
+                a = up[a][j];
+            }
+        }
+
+//        If both come out to be equal then
+        if(a == b) return a;
+
+//        Jump both nodes upward
+        for(int j = col - 1; j >= 0; j--) {
+            if (up[a][j] != up[b][j]) {
+                a = up[a][j];
+                b = up[b][j];
+            }
+        }
+        return up[a][0];
+    }
+    public static void solve(FastScanner fs, PrintWriter out) {
+        int n = fs.nextInt();
+        int m = fs.nextInt();
+
+        List<Integer>[] adj = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<>();
+        }
+        for (int i = 0; i < n-1; i++) {
+            int a = fs.nextInt() - 1;
+            int b = fs.nextInt() - 1;
+            adj[a].add(b);
+            adj[b].add(a);
+        }
+
+//        Reroot the tree at node 0
+        int[] parent = new int[n];
+        Arrays.fill(parent, -1);
+        depth = new int[n];
+
+        Queue<Integer> qs = new LinkedList<>();
+        qs.add(0);
+        List<Integer> order = new ArrayList<>();
+        while (!qs.isEmpty()) {
+            int u = qs.poll();
+            order.add(u);
+            for (int v : adj[u]) {
+                if(v != parent[u]) {
+                    parent[v] = u;
+                    depth[v] = depth[u] + 1;
+                    qs.add(v);
+                }
+            }
+        }
+
+        col = 1;
+        while ((1L << col) <= n) {
+            col++;
+        }
+        up = new int[n][col];
+        for(int[] r : up) Arrays.fill(r, -1);
+
+        for (int i = 1; i < n; i++) {
+            up[i][0] = parent[i];
+        }
+
+        for(int j = 1; j < col; j++) {
+            for(int i = 0; i < n; i++) {
+                if(up[i][j-1] != -1) {
+                    up[i][j] = up[up[i][j-1]][j-1];
+                }
+            }
+        }
+
+        int[] count = new int[n];
+        for(int i = 0; i < m; i++) {
+            int a = fs.nextInt() - 1;
+            int b = fs.nextInt() - 1;
+            int l = lca(a, b);
+
+            count[a]++;
+            count[b]++;
+            count[l]--;
+
+            if(parent[l] != -1)
+                count[parent[l]]--;
+        }
+
+        for(int i = n-1; i > 0; i--) {
+            int u = order.get(i);
+            count[parent[u]] += count[u];
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < n; i++) {
+            sb.append(count[i]).append(" ");
+        }
+        out.println(sb.toString().trim());
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
