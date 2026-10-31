@@ -1,0 +1,189 @@
+import java.io.*;
+import java.util.*;
+
+
+public class Main {
+    private static long[] fenwickTree;
+    private static int n;
+
+    private static void updateFenTree(int i, int value) {
+        while(i <= n) {
+            fenwickTree[i] += value;
+            i = i + (i & (-i));
+        }
+    }
+
+    private static long queryFenTree(int i) {
+        long sum = 0;
+        while(i > 0) {
+            sum += fenwickTree[i];
+            i = i - (i & (-i));
+        }
+        return sum;
+    }
+
+    public static void solve(FastScanner fs, PrintWriter out) {
+        n = fs.nextInt();
+        int q = fs.nextInt();
+
+        int[] arr = new int[n+1];
+        fenwickTree = new long[n+1];
+        for(int i = 1; i <= n; i++){
+            int val = fs.nextInt();
+            arr[i] = val;
+            updateFenTree(i, val);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < q; i++) {
+            int type = fs.nextInt();
+            if(type == 1){
+                int idx = fs.nextInt();
+                int val = fs.nextInt();
+                int diff = val - arr[idx];
+                arr[idx] = val;
+                updateFenTree(idx, diff);
+            } else {
+                int a = fs.nextInt();
+                int b = fs.nextInt();
+                long ans = queryFenTree(b) - queryFenTree(a-1);
+                sb.append(ans).append("\n");
+            }
+        }
+        out.println(sb);
+        return;
+    }
+
+    public static void main(String[] args) {
+        FastScanner fs = new FastScanner();
+        PrintWriter out = new PrintWriter(System.out);
+        int t = 1;
+        while (t-- > 0) {
+            solve(fs, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0)
+                    return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() {
+            StringBuilder sb = new StringBuilder();
+            try {
+                int c;
+
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return null;
+                }
+
+                do {
+                    sb.append((char) c);
+                    c = read();
+                } while (c > ' ');
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                int val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        long nextLong() {
+            try {
+                int c;
+                while ((c = read()) <= ' ') {
+                    if (c == -1)
+                        return -1;
+                }
+
+                int sign = 1;
+                if (c == '-') {
+                    sign = -1;
+                    c = read();
+                }
+
+                long val = 0;
+                while (c > ' ') {
+                    val = val * 10 + c - '0';
+                    c = read();
+                }
+
+                return val * sign;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+        double nextDouble() {
+            return Double.parseDouble(next());
+        }
+
+        char nextChar() {
+            return next().charAt(0);
+        }
+
+        String nextLine() {
+            StringBuilder sb = new StringBuilder();
+
+            try {
+                int c = read();
+
+                // skip '\n' and '\r'
+                while (c == '\n' || c == '\r') {
+                    c = read();
+                }
+
+                while (c != '\n' && c != '\r' && c != -1) {
+                    sb.append((char) c);
+                    c = read();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+
+            return sb.toString();
+        }
+    }
+}
